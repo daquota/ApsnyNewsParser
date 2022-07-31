@@ -5,6 +5,7 @@ import getopt
 import sys
 from pymongo import MongoClient
 import config as conf
+import __environ__
 
 
 def get_module_name_to_run(argv):
@@ -13,6 +14,8 @@ def get_module_name_to_run(argv):
     :param argv: параметры командной строки
     :return: имя модуля (спайдера) для запуска
     """
+    if __environ__.DEVELOPMENT_MODE:
+        return 'sputnik'
     module = ''
     opts, args = getopt.getopt(argv, "m:k")
     # print(opts, args)
@@ -49,3 +52,4 @@ class MongoDB:
         result = self._collection.find({"source": source}, projection={'link': 1}, sort=[("page_id", -1)], limit=50)
         parsed = [_['link'] for _ in result]
         return parsed
+

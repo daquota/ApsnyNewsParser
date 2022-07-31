@@ -1,2 +1,3 @@
 venv
 /ApsnyParser/credentials.py
+/ApsnyParser/__environ__.py
