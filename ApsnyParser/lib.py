@@ -6,7 +6,7 @@ import sys
 from pymongo import MongoClient
 import config as conf
 import __environ__
-
+import pytz
 
 def get_module_name_to_run(argv):
     """
@@ -53,3 +53,11 @@ class MongoDB:
         parsed = [_['link'] for _ in result]
         return parsed
 
+
+def get_timeshift(time):
+    """
+    Добавляет смещение для московского времени, если исходное время в  UTC
+    :param time: дата
+    :return: скорректированная дата
+    """
+    return time.astimezone(pytz.timezone('Europe/Moscow'))

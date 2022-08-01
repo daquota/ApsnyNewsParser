@@ -8,7 +8,7 @@ from scrapy import signals
 from datetime import datetime, timedelta
 from scrapy.http import HtmlResponse
 from ApsnyParser.items import ApsnyparserItem
-from lib import MongoDB
+from lib import MongoDB, get_timeshift
 # from copy import deepcopy
 
 
@@ -26,7 +26,7 @@ class SputnikSpider(scrapy.Spider):
         super().__init__(**kwargs)
 
     def spider_closed(self, spider):
-        print(f'{datetime.now()} Spider "{spider.name}": {len(self.parsed_items)} items parsed')
+        print(f'{get_timeshift(datetime.now())} Spider "{spider.name}": {len(self.parsed_items)} items parsed')
 
     def parse(self, response: HtmlResponse):
         if response.status == 200:
@@ -41,7 +41,7 @@ class SputnikSpider(scrapy.Spider):
         page_id = page_id[1] if page_id else ''
         title = response.xpath("//h1/text()").extract_first()
         article_time = response.xpath("//div[@class='article__info-date']/a/@data-unixtime").extract_first()
-        article_time = datetime.utcfromtimestamp(int(article_time) + 60*60*3).strftime('%H:%M:%S %d-%m-%Y') if article_time else ''
+        article_time = datetime. strptime(datetime.utcfromtimestamp(int(article_time) + 60*60*3).strftime('%H:%M:%S %d-%m-%Y'), '%H:%M:%S %d-%m-%Y') if article_time else ''
         img = response.xpath("//div[@class='photoview__open']/img/@src").extract_first()
         announce = response.xpath("//div[@class='article__announce-text']/text()").extract_first()
         article = response.xpath("//div[@class='article__body']/*[(contains(@data-type, 'quote')) or (contains(@data-type, 'text')) or (contains(@data-type, 'h3'))]").extract()
