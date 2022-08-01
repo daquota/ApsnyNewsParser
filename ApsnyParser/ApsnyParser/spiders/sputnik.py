@@ -9,6 +9,7 @@ from datetime import datetime, timedelta
 from scrapy.http import HtmlResponse
 from ApsnyParser.items import ApsnyparserItem
 from lib import MongoDB, get_timeshift
+from slugify import slugify
 # from copy import deepcopy
 
 
@@ -48,10 +49,11 @@ class SputnikSpider(scrapy.Spider):
         article = self.clean_article(article)
         tags = response.xpath("//ul[contains(@class, 'tag')]/li/a/text()").extract()
         link = response.url
+        slug = slugify(title, max_length=64, word_boundary=True)
 
         item = ApsnyparserItem(
             page_id=page_id, article_time=article_time, title=title, img=img,
-            announce=announce, article=article, tags=tags, source=self.name, link=link
+            announce=announce, article=article, tags=tags, source=self.name, link=link, slug=slug
         )
         self.parsed_items.append(item)
         yield item

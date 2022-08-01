@@ -11,4 +11,5 @@ class ApsnyparserItem(scrapy.Item):
     tags = scrapy.Field()
     source = scrapy.Field()
     link = scrapy.Field()
+    slug = scrapy.Field()
     _id = scrapy.Field()
