@@ -34,7 +34,7 @@ class SputnikSpider(scrapy.Spider):
         print(f'{get_timeshift(datetime.now())} Spider "{spider.name}": {len(self.parsed_items)} items parsed')
 
     def parse(self, response: HtmlResponse):
-        if self.single:
+        if len(self.single):
             for i in self.single:
                 # if f'{self.domain}{i}' not in self.already_parsed:
                 yield response.follow(i, callback=self.parse_page)
