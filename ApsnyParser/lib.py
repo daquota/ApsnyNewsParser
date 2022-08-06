@@ -49,7 +49,7 @@ class MongoDB:
         :param source: идентификатор сайта на котором парсим новости
         :return: возвращает список урлов новостей, которые уже сохранены в базе
         """
-        result = self._collection.find({"source": source}, projection={'link': 1}, sort=[("page_id", -1)], limit=50)
+        result = self._collection.find({"source": source}, projection={'link': 1}, sort=[("page_id", -1)]).limit(500)
         parsed = [_['link'] for _ in result]
         return parsed
 
