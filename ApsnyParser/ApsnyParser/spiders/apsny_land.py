@@ -22,7 +22,7 @@ class ApsnyLandSpider(scrapy.Spider):
     allowed_domains = ['md.apsny.land', 'sukhum.apsny.land', 'sgb.apsny.land', 'minkult.apsny.land', 'mchs.apsny.land',
                        'minzdrav.apsny.land', 'genproc.apsny.land', 'mso.apsny.land', 'minselhoz.apsny.land',
                        'memory.apsny.land', 'opra.apsny.land', 'csi.apsny.land', 'www.mkdc-sukhum.com',
-                       'repatriate.apsny.land']
+                       'repatriate.apsny.land', 'www.apsnypress.info', 'www.abkhazinform.com', 'vs-ra.org']
     start_urls = ['https://md.apsny.land/novosti?format=feed', 'https://sukhum.apsny.land/novosti?format=feed',
                   'https://sgb.apsny.land/?format=feed', 'https://minkult.apsny.land/novosti?format=feed',
                   'https://mchs.apsny.land/novosti?format=feed',
@@ -30,7 +30,11 @@ class ApsnyLandSpider(scrapy.Spider):
                   'https://genproc.apsny.land/genproc-news?format=feed', 'https://mso.apsny.land/novosti?format=feed',
                   'https://minselhoz.apsny.land/novosti/?format=feed', 'https://csi.apsny.land/ru/?format=feed',
                   'https://memory.apsny.land/novosti?format=feed', 'https://www.mkdc-sukhum.com/novosti/?format=feed',
-                  'https://opra.apsny.land/novosti?format=feed', 'https://repatriate.apsny.land/novosti?format=feed'
+                  'https://opra.apsny.land/novosti?format=feed', 'https://repatriate.apsny.land/novosti?format=feed',
+                  'https://www.apsnypress.info/ru/novosti?format=feed',
+                  'http://www.abkhazinform.com/?format=feed', 'http://www.abkhazinform.com/intervyu/?format=feed',
+                  'http://www.abkhazinform.com/tochka-zreniya/?format=feed',
+                  'https://vs-ra.org/primenews/?format=feed', 'https://vs-ra.org/novosti-i-informatsiya/?format=feed'
                   ]
 
     def __init__(self, **kwargs):
@@ -76,8 +80,8 @@ class ApsnyLandSpider(scrapy.Spider):
                 else:
                     announce = self.make_announce(article, 1)
                 if article == '' and announce != '':
-                    article = announce
-                    announce = self.make_announce(announce, 1)
+                    article = announce1[1]
+                    announce = self.make_announce(announce1[1], 1)
                 img = re.search(r'<enclosure url="(.*?)".+?/>', node, flags=re.MULTILINE+re.DOTALL)
                 img = img[1] if img else ''
                 img = self.try_xl_image(img)
@@ -142,7 +146,8 @@ class ApsnyLandSpider(scrapy.Spider):
         :param sentences: количество предложений
         :return: текст анонса, очищенный от html-тегов
         """
+        announce = re.sub(r'<strong>.+?</strong>', '', text)
         cleaner = re.compile('<.*?>')
-        announce = html.unescape(re.sub(cleaner, '', text))
+        announce = html.unescape(re.sub(cleaner, '', announce))
         announce = '.'.join(announce.split('.')[:sentences]).strip()+'.'
         return announce
