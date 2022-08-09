@@ -15,7 +15,7 @@ def get_module_name_to_run(argv):
     :return: имя модуля (спайдера) для запуска
     """
     if __environ__.DEVELOPMENT_MODE:
-        return 'sputnik'
+        return __environ__.DEV_SPIDER
     module = ''
     opts, args = getopt.getopt(argv, "m:k")
     # print(opts, args)

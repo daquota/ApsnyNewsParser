@@ -9,6 +9,7 @@ from scrapy.settings import Settings
 
 from ApsnyParser import settings as apsnysettings
 from ApsnyParser.spiders.sputnik import SputnikSpider
+from ApsnyParser.spiders.apsny_land import ApsnyLandSpider
 
 
 def sputnik_spider():
@@ -19,7 +20,17 @@ def sputnik_spider():
     process.start()
 
 
+def apsny_land_spider():
+    crawler_settings = Settings()
+    crawler_settings.setmodule(apsnysettings)
+    process = CrawlerProcess(settings=crawler_settings)
+    process.crawl(ApsnyLandSpider)
+    process.start()
+
+
 if __name__ == '__main__':
     module = lib.get_module_name_to_run((sys.argv[1:]))
     if module == 'sputnik':
         sputnik_spider()
+    if module == 'apsny_land':
+        apsny_land_spider()
