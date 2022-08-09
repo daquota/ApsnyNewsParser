@@ -8,7 +8,7 @@ from scrapy import signals
 from datetime import datetime, timedelta
 from scrapy.http import HtmlResponse
 from ApsnyParser.items import ApsnyparserItem
-from lib import MongoDB, get_timeshift
+from lib import MongoDB, get_timeshift, make_announce
 from slugify import slugify
 # from copy import deepcopy
 
@@ -25,7 +25,7 @@ class SputnikSpider(scrapy.Spider):
         self._mongoClient = MongoDB()
         self.already_parsed = self._mongoClient.read_parsed(self.name)
         self.single = [
-            # 'https://sputnik-abkhazia.ru/20220804/ot-pervogo-litsa-aslan-bzhaniya-otvetil-na-voprosy-zhurnalistov-1040717671.html'
+            # 'https://sputnik-abkhazia.ru/20220809/ulitsa-dzhonua-v-sukhume-budet-chastichno-perekryta-v-sredu-10-avgusta-1040835471.html'
             # 'https://sputnik-abkhazia.ru/20220804/tsifry-ot-mera-uspekhi-sukhuma-v-pervoy-polovine-2022-goda-1040720197.html'
                        ]
         super().__init__(**kwargs)
@@ -57,6 +57,8 @@ class SputnikSpider(scrapy.Spider):
         embed = [_ for _ in embed]
         announce = response.xpath("//div[@class='article__announce-text']/text()").extract_first()
         article = response.xpath("//div[@class='article__body']/*[(contains(@data-type, 'quote')) or (contains(@data-type, 'text')) or (contains(@data-type, 'h3'))]").extract()
+        if not announce and article:
+            announce = make_announce(article[0], 1)
         article = self.clean_article(article)
         tags = response.xpath("//ul[contains(@class, 'tag')]/li/a/text()").extract()
         link = response.url

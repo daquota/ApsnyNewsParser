@@ -8,7 +8,7 @@ from scrapy import signals
 from datetime import datetime
 from scrapy.http import HtmlResponse
 from ApsnyParser.items import ApsnyparserItem
-from lib import MongoDB, get_timeshift
+from lib import MongoDB, get_timeshift, make_announce
 from slugify import slugify
 from dateutil.parser import parse
 from urllib.parse import urlparse
@@ -76,12 +76,12 @@ class ApsnyLandSpider(scrapy.Spider):
                     if announce1[1] != '':
                         announce = re.sub(re.compile('<.*?>'), '', announce1[1]).strip()
                     else:
-                        announce = self.make_announce(article, 1)
+                        announce = make_announce(article, 1)
                 else:
-                    announce = self.make_announce(article, 1)
+                    announce = make_announce(article, 1)
                 if article == '' and announce != '':
                     article = announce1[1]
-                    announce = self.make_announce(announce1[1], 1)
+                    announce = make_announce(announce1[1], 1)
                 img = re.search(r'<enclosure url="(.*?)".+?/>', node, flags=re.MULTILINE+re.DOTALL)
                 img = img[1] if img else ''
                 img = self.try_xl_image(img)
@@ -137,17 +137,3 @@ class ApsnyLandSpider(scrapy.Spider):
         page_id = re.search(r'/item/([0-9]*?)-', link, flags=re.DOTALL)
         page_id = page_id[1] if page_id else ''
         return page_id
-
-    @staticmethod
-    def make_announce(text, sentences):
-        """
-        Делает анонс статьи из первых предложений статьи
-        :param text: текст статьи
-        :param sentences: количество предложений
-        :return: текст анонса, очищенный от html-тегов
-        """
-        announce = re.sub(r'<strong>.+?</strong>', '', text)
-        cleaner = re.compile('<.*?>')
-        announce = html.unescape(re.sub(cleaner, '', announce))
-        announce = '.'.join(announce.split('.')[:sentences]).strip()+'.'
-        return announce

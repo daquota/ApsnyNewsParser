@@ -7,6 +7,9 @@ from pymongo import MongoClient
 import config as conf
 import __environ__
 import pytz
+import re
+import html
+
 
 def get_module_name_to_run(argv):
     """
@@ -61,3 +64,17 @@ def get_timeshift(time):
     :return: скорректированная дата
     """
     return time.astimezone(pytz.timezone('Europe/Moscow'))
+
+
+def make_announce(text, sentences):
+    """
+    Делает анонс статьи из первых предложений статьи
+    :param text: текст статьи
+    :param sentences: количество предложений
+    :return: текст анонса, очищенный от html-тегов
+    """
+    announce = re.sub(r'<strong>.+?</strong>', '', text)
+    cleaner = re.compile('<.*?>')
+    announce = html.unescape(re.sub(cleaner, '', announce))
+    announce = '.'.join(announce.split('.')[:sentences]).strip()+'.'
+    return announce
