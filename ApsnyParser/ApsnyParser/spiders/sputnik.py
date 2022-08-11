@@ -10,6 +10,8 @@ from scrapy.http import HtmlResponse
 from ApsnyParser.items import ApsnyparserItem
 from lib import MongoDB, get_timeshift, make_announce
 from slugify import slugify
+from urllib.parse import urlparse
+import pytz
 # from copy import deepcopy
 
 
@@ -51,7 +53,8 @@ class SputnikSpider(scrapy.Spider):
         page_id = page_id[1] if page_id else ''
         title = response.xpath("//h1/text()").extract_first()
         article_time = response.xpath("//div[@class='article__info-date']/a/@data-unixtime").extract_first()
-        article_time = datetime. strptime(datetime.utcfromtimestamp(int(article_time) + 60*60*3).strftime('%H:%M:%S %d-%m-%Y'), '%H:%M:%S %d-%m-%Y') if article_time else ''
+        article_time = datetime.strptime(datetime.utcfromtimestamp(int(article_time) + 60*60*3).strftime('%H:%M:%S %d-%m-%Y'), '%H:%M:%S %d-%m-%Y') if article_time else ''
+        article_time = get_timeshift(article_time)
         img = response.xpath("//div[@class='photoview__open']/img/@src").extract_first()
         embed = response.xpath("//div[@class='article__announce']//div[@class='media__embed']/iframe/@src").extract()
         embed = [_ for _ in embed]
@@ -62,11 +65,12 @@ class SputnikSpider(scrapy.Spider):
         article = self.clean_article(article)
         tags = response.xpath("//ul[contains(@class, 'tag')]/li/a/text()").extract()
         link = response.url
-        slug = slugify(title, max_length=64, word_boundary=True)
+        slug = slugify(title, max_length=128, word_boundary=True)
+        source = urlparse(response.url).netloc
 
         item = ApsnyparserItem(
             page_id=page_id, article_time=article_time, title=title, img=img, embed=embed,
-            announce=announce, article=article, tags=tags, source=self.name, link=link, slug=slug
+            announce=announce, article=article, tags=tags, source=source, link=link, slug=slug
         )
         self.parsed_items.append(item)
         yield item

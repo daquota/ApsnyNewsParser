@@ -10,6 +10,15 @@ from scrapy.settings import Settings
 from ApsnyParser import settings as apsnysettings
 from ApsnyParser.spiders.sputnik import SputnikSpider
 from ApsnyParser.spiders.apsny_land import ApsnyLandSpider
+from ApsnyParser.spiders.apsadgil_info import ApsadgilInfoSpider
+
+
+def apsadgil_info_spider():
+    crawler_settings = Settings()
+    crawler_settings.setmodule(apsnysettings)
+    process = CrawlerProcess(settings=crawler_settings)
+    process.crawl(ApsadgilInfoSpider)
+    process.start()
 
 
 def sputnik_spider():
@@ -34,3 +43,5 @@ if __name__ == '__main__':
         sputnik_spider()
     if module == 'apsny_land':
         apsny_land_spider()
+    if module == 'apsadgil_info':
+        apsadgil_info_spider()

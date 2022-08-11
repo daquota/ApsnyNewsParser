@@ -6,9 +6,12 @@ import sys
 from pymongo import MongoClient
 import config as conf
 import __environ__
+import credentials as cr
 import pytz
 import re
 import html
+from dateutil.parser import parse
+import boto3
 
 
 def get_module_name_to_run(argv):
@@ -74,7 +77,58 @@ def make_announce(text, sentences):
     :return: текст анонса, очищенный от html-тегов
     """
     announce = re.sub(r'<strong>.+?</strong>', '', text)
-    cleaner = re.compile('<.*?>')
-    announce = html.unescape(re.sub(cleaner, '', announce))
-    announce = '.'.join(announce.split('.')[:sentences]).strip()+'.'
+    announce = html.unescape(re.sub(re.compile('<.*?>'), ' ', announce)).lstrip('. ')
+    announce = '. '.join(announce.split('. ')[:sentences]).strip()
     return announce
+
+
+def clear_announce(text):
+    announce = re.sub(r'<strong>.+?</strong>', '', text)
+    announce = html.unescape(re.sub(re.compile('<.*?>'), '', announce)).lstrip('. ')
+    return announce
+
+
+def parse_date(date):
+    """
+    Конвертер для русских дат
+    :param date:
+    :return:
+    """
+    monthes = {'января': 'january', 'февраля': 'february', 'марта': 'march',
+               'апреля': 'april', 'мая': 'may', 'июня': 'june',
+               'июля': 'july', 'августа': 'august', 'сентября': 'september',
+               'октября': 'october', 'ноября': 'november', 'декабря': 'december'
+               }
+    date = str(date).lower()
+    for i in monthes:
+        date = re.sub(f'{i}', monthes[i], date)
+    return parse(date)
+
+
+def strip_announce(txt, max_char):
+    """
+    Обрезаем анонс до заданной длинны
+    :param txt: Исходный текст анонса
+    :param max_char: Максимальное число символов
+    :return: Обрезанный анонс
+    """
+    ch = txt.split(' ')
+    lead = ''
+    for i in ch:
+        if max_char >= 0:
+            lead += ' ' + i
+            max_char -= len(i)
+        else:
+            lead = lead.strip()
+            lead += '...'
+            break
+    return lead
+
+
+class S3ObjectCloud:
+    def __init__(self):
+        self._session = boto3.session.Session(aws_access_key_id=cr.key_id,
+                                              aws_secret_access_key=cr.secret_key,
+                                              region_name='ru-central1')
+        self._s3 = self._session.client(service_name='s3', endpoint_url='https://storage.yandexcloud.net')
+

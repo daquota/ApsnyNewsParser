@@ -8,7 +8,7 @@ from scrapy import signals
 from datetime import datetime
 from scrapy.http import HtmlResponse
 from ApsnyParser.items import ApsnyparserItem
-from lib import MongoDB, get_timeshift, make_announce
+from lib import MongoDB, get_timeshift, make_announce, strip_announce, clear_announce
 from slugify import slugify
 from dateutil.parser import parse
 from urllib.parse import urlparse
@@ -41,6 +41,9 @@ class ApsnyLandSpider(scrapy.Spider):
         dispatcher.connect(self.spider_closed, signals.spider_closed)
         self.parsed_items = []
         self._mongoClient = MongoDB()
+        self.single = [
+            # 'https://www.apsnypress.info/ru/novosti/item/833-obshchestvennaya-palata-gotova-sodejstvovat-dostizheniyu-obshchestvennogo-soglasiya'
+                       ]
         super().__init__(**kwargs)
 
     def spider_closed(self, spider):
@@ -66,22 +69,26 @@ class ApsnyLandSpider(scrapy.Spider):
                 page_id = self.get_page_id(link)
                 date = re.search(r'<pubDate>(.*?)</pubDate>', i, flags=re.MULTILINE+re.DOTALL)
                 date = date[1] if date else ''
-                article_time = parse(date)
+                article_time = get_timeshift(parse(date))
                 embed = ''
                 node = html.unescape(i)
-                article = re.search(r'K2FeedFullText">(.*?)</div>', node, flags=re.MULTILINE+re.DOTALL)
-                article = article[1].strip() if article else ''
+                article1 = re.search(r'K2FeedFullText">(.*?)</div>', node, flags=re.MULTILINE+re.DOTALL)
+                article1 = article1[1].strip() if article1 else False
                 announce1 = re.search(r'K2FeedIntroText">(.*?)</div>', node, flags=re.MULTILINE+re.DOTALL)
-                if announce1:
-                    if announce1[1] != '':
-                        announce = re.sub(re.compile('<.*?>'), '', announce1[1]).strip()
-                    else:
-                        announce = make_announce(article, 1)
-                else:
+                announce1 = announce1[1] if announce1 else False
+                if article1 and announce1:
+                    announce = clear_announce(announce1)
+                    article = self.clear_txt(article1)
+                elif article1 and not announce1:
+                    announce = make_announce(article1, 1)
+                    article = self.clear_txt(article1)
+                elif not article1 and announce1:
+                    article = self.clear_txt(announce1)
                     announce = make_announce(article, 1)
-                if article == '' and announce != '':
-                    article = announce1[1]
-                    announce = make_announce(announce1[1], 1)
+                elif not article1 and not announce1:
+                    article = ''
+                    announce = ''
+
                 img = re.search(r'<enclosure url="(.*?)".+?/>', node, flags=re.MULTILINE+re.DOTALL)
                 img = img[1] if img else ''
                 img = self.try_xl_image(img)
@@ -99,6 +106,13 @@ class ApsnyLandSpider(scrapy.Spider):
                 self.parsed_items.append(item)
                 # print(item)
                 yield item
+
+    def clear_txt(self, article):
+        article = re.sub(r'<p.*?>', '<p>', article, flags=re.MULTILINE+re.DOTALL)
+        article = re.sub(r'<span.*?>', '', article, flags=re.MULTILINE+re.DOTALL)
+        article = re.sub(r'</span>', '', article, flags=re.MULTILINE+re.DOTALL)
+        article = html.unescape(article)
+        return article
 
     @staticmethod
     def get_gallery_img(gallery_txt):
