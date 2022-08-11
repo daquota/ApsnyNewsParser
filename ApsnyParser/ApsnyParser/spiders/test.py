@@ -11,6 +11,7 @@ from urllib.parse import urlparse
 import html
 import requests
 import logging
+from dateutil.parser import parse
 
 
 class TestSpider(scrapy.Spider):
@@ -35,7 +36,7 @@ class TestSpider(scrapy.Spider):
         source = urlparse(response.url).netloc
         if source == 'apsadgil.info':
             date = response.xpath("//div[@class='ds']/span[@class='date']/text()").extract_first()
-            article_time = get_timeshift(parse_date(date))
+            article_time = parse_date(date)
             print(source, article_time)
         if source == 'sputnik-abkhazia.ru':
             article_time = response.xpath("//div[@class='article__info-date']/a/@data-unixtime").extract_first()

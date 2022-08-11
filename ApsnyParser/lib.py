@@ -12,6 +12,7 @@ import re
 import html
 from dateutil.parser import parse
 import boto3
+from datetime import datetime, timedelta, timezone
 
 
 def get_module_name_to_run(argv):
@@ -99,10 +100,10 @@ def parse_date(date):
                'июля': 'july', 'августа': 'august', 'сентября': 'september',
                'октября': 'october', 'ноября': 'november', 'декабря': 'december'
                }
-    date = str(date).lower()
+    date = str(date).lower()+'+0300'
     for i in monthes:
         date = re.sub(f'{i}', monthes[i], date)
-    return parse(date)
+    return datetime.strptime(date, '%d %B %Y %H:%M%z')
 
 
 def strip_announce(txt, max_char):
