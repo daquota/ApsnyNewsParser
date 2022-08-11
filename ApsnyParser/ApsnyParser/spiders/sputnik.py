@@ -25,7 +25,7 @@ class SputnikSpider(scrapy.Spider):
         dispatcher.connect(self.spider_closed, signals.spider_closed)
         self.parsed_items = []
         self._mongoClient = MongoDB()
-        self.already_parsed = self._mongoClient.read_parsed(self.name)
+        self.already_parsed = self._mongoClient.read_parsed(urlparse(self.domain).netloc)
         self.single = [
             # 'https://sputnik-abkhazia.ru/20220809/ulitsa-dzhonua-v-sukhume-budet-chastichno-perekryta-v-sredu-10-avgusta-1040835471.html'
             # 'https://sputnik-abkhazia.ru/20220804/tsifry-ot-mera-uspekhi-sukhuma-v-pervoy-polovine-2022-goda-1040720197.html'
