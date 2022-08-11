@@ -55,7 +55,7 @@ class ApsadgilInfoSpider(scrapy.Spider):
         title = response.xpath("//h1/text()").extract_first().strip()
         slug = slugify(title, max_length=128, word_boundary=True)
         date = response.xpath("//div[@class='ds']/span[@class='date']/text()").extract_first()
-        article_time = get_timeshift(parse_date(date))
+        article_time = parse_date(date)
         img = response.xpath("//div[@class='newsdetail']/img/@src").extract_first()
         if img:
             img = img if urlparse(img).netloc else f'{self.domain}{img}'

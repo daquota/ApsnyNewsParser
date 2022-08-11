@@ -5,7 +5,7 @@ import re
 import scrapy
 from pydispatch import dispatcher
 from scrapy import signals
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from scrapy.http import HtmlResponse
 from ApsnyParser.items import ApsnyparserItem
 from lib import MongoDB, get_timeshift, make_announce
@@ -53,7 +53,7 @@ class SputnikSpider(scrapy.Spider):
         page_id = page_id[1] if page_id else ''
         title = response.xpath("//h1/text()").extract_first()
         article_time = response.xpath("//div[@class='article__info-date']/a/@data-unixtime").extract_first()
-        article_time = datetime.strptime(datetime.utcfromtimestamp(int(article_time)).strftime('%H:%M:%S %d-%m-%Y'), '%H:%M:%S %d-%m-%Y') if article_time else ''
+        article_time = datetime.fromtimestamp(int(article_time), tz=timezone.utc) if article_time else ''
         article_time = get_timeshift(article_time)
         img = response.xpath("//div[@class='photoview__open']/img/@src").extract_first()
         embed = response.xpath("//div[@class='article__announce']//div[@class='media__embed']/iframe/@src").extract()
