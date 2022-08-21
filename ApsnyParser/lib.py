@@ -67,6 +67,8 @@ def get_timeshift(time):
     :param time: дата
     :return: скорректированная дата
     """
+    if not time:
+        return ''
     return time.astimezone(pytz.timezone('Europe/Moscow'))
 
 

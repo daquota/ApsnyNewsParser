@@ -27,8 +27,8 @@ class SputnikSpider(scrapy.Spider):
         self._mongoClient = MongoDB()
         self.already_parsed = self._mongoClient.read_parsed(urlparse(self.domain).netloc)
         self.single = [
-            # 'https://sputnik-abkhazia.ru/20220809/ulitsa-dzhonua-v-sukhume-budet-chastichno-perekryta-v-sredu-10-avgusta-1040835471.html'
-            # 'https://sputnik-abkhazia.ru/20220804/tsifry-ot-mera-uspekhi-sukhuma-v-pervoy-polovine-2022-goda-1040720197.html'
+            # 'https://sputnik-abkhazia.ru/20220820/sokrovische-lykhnenskogo-khrama-1041018746.html',
+            # 'https://sputnik-abkhazia.ru/20220821/faktoriya-u-morya-kak-v-kyndyge-sokhranilas-genuezskaya-krepost-1041049108.html'
                        ]
         super().__init__(**kwargs)
 
@@ -52,6 +52,8 @@ class SputnikSpider(scrapy.Spider):
         page_id = re.search(r'-([0-9]+)\.html', response.url)
         page_id = page_id[1] if page_id else ''
         title = response.xpath("//h1/text()").extract_first()
+        if not title:
+            return
         article_time = response.xpath("//div[@class='article__info-date']/a/@data-unixtime").extract_first()
         article_time = datetime.fromtimestamp(int(article_time), tz=timezone.utc) if article_time else ''
         article_time = get_timeshift(article_time)

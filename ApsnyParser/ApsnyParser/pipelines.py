@@ -25,6 +25,8 @@ class ApsnyparserPipeline:
         return item
 
     def upload_img_to_s3(self, img):
+        if not img:
+            return ''
         new_img = ''
         filename_name = re.search(r'[^/\\&\?]+\.\w{3,4}(?=([\?&].*$|$))', img)[0]
         filename = f"images/{filename_name}"
